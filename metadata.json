@@ -1,0 +1,5 @@
+{
+  "name": "AI Tools Directory",
+  "description": "A full-stack AI Tools Directory with search, filters, user authentication, and upvoting.",
+  "requestFramePermissions": []
+}
