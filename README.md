@@ -1,31 +1,27 @@
-<div align="center">
-<img width="1200" height="475" alt="AiVault Banner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# AiVault
 
-# AiVault - AI Tools Directory
+A curated directory for discovering, comparing, and sharing the best AI tools across every category.
 
-A curated directory for discovering, comparing, and sharing the best AI tools across every category. Built with Next.js, Convex, and Clerk authentication.
+## Features
 
-## ✨ Features
+- **Discover AI Tools** - Browse 40+ curated AI tools across categories like Writing, Image, Video, Coding, Productivity, Audio, and Design
+- **Bookmark Tools** - Save your favorite tools to your personal dashboard
+- **Submit Tools** - Share new AI tools with the community (admin approval required)
+- **Dark/Light Mode** - Beautiful theme toggle with system preference support
+- **Responsive Design** - Fully responsive UI that works on all devices
+- **User Authentication** - Secure sign-in/sign-up with Clerk
+- **Real-time Updates** - Live data with Convex backend
 
-- 🔍 **Discover AI Tools** - Browse 40+ curated AI tools across categories like Writing, Image, Video, Coding, Productivity, Audio, and Design
-- 💾 **Bookmark Tools** - Save your favorite tools to your personal dashboard
-- ➕ **Submit Tools** - Share new AI tools with the community (admin approval required)
-- 🎨 **Dark/Light Mode** - Beautiful theme toggle with system preference support
-- 📱 **Responsive Design** - Fully responsive UI that works on all devices
-- 🔐 **User Authentication** - Secure sign-in/sign-up with Clerk
-- ⚡ **Real-time Updates** - Live data with Convex backend
+## Tech Stack
 
-## 🛠️ Tech Stack
+- **Framework:** Next.js 15 with App Router
+- **Styling:** Tailwind CSS + shadcn/ui
+- **Backend:** Convex (serverless database & functions)
+- **Auth:** Clerk (authentication & user management)
+- **Animations:** Framer Motion
+- **Icons:** Lucide React
 
-- **Framework:** [Next.js 15](https://nextjs.org/) with App Router
-- **Styling:** [Tailwind CSS](https://tailwindcss.com/) + [shadcn/ui](https://ui.shadcn.com/)
-- **Backend:** [Convex](https://convex.dev/) (serverless database & functions)
-- **Auth:** [Clerk](https://clerk.com/) (authentication & user management)
-- **Animations:** [Framer Motion](https://www.framer.com/motion/)
-- **Icons:** [Lucide React](https://lucide.dev/)
-
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
@@ -36,8 +32,8 @@ A curated directory for discovering, comparing, and sharing the best AI tools ac
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/aivault.git
-   cd aivault
+   git clone https://github.com/seyarhasir/AiVault2.git
+   cd AiVault2
    ```
 
 2. **Install dependencies**
@@ -54,10 +50,10 @@ A curated directory for discovering, comparing, and sharing the best AI tools ac
    ```
    
    Required environment variables:
-   - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` - Get from [Clerk Dashboard](https://dashboard.clerk.com)
-   - `CLERK_SECRET_KEY` - Get from [Clerk Dashboard](https://dashboard.clerk.com)
-   - `NEXT_PUBLIC_CONVEX_URL` - Get from [Convex Dashboard](https://dashboard.convex.dev)
-   - `CONVEX_DEPLOY_KEY` - Get from [Convex Dashboard](https://dashboard.convex.dev)
+   - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` - Get from Clerk Dashboard
+   - `CLERK_SECRET_KEY` - Get from Clerk Dashboard
+   - `NEXT_PUBLIC_CONVEX_URL` - Get from Convex Dashboard
+   - `CONVEX_DEPLOY_KEY` - Get from Convex Dashboard
 
 4. **Run the development server**
    ```bash
@@ -66,7 +62,7 @@ A curated directory for discovering, comparing, and sharing the best AI tools ac
    
    Open [http://localhost:3000](http://localhost:3000) to view the app.
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 aivault/
@@ -90,14 +86,11 @@ aivault/
 └── public/                 # Static assets
 ```
 
-## 🔑 Admin Access
+## Admin Access
 
-The admin dashboard (`/admin`) allows approving or rejecting tool submissions. Currently, any authenticated user can access it. To restrict access:
+The admin dashboard (`/admin`) allows approving or rejecting tool submissions. Currently, any authenticated user can access it. To restrict access, add admin user IDs to your Convex database and update the admin page to check for admin role.
 
-1. Add admin user IDs to your Convex database
-2. Update the admin page to check for admin role
-
-## 📝 Contributing
+## Contributing
 
 1. Fork the repository
 2. Create a feature branch: `git checkout -b feature/amazing-feature`
@@ -105,10 +98,6 @@ The admin dashboard (`/admin`) allows approving or rejecting tool submissions. C
 4. Push to the branch: `git push origin feature/amazing-feature`
 5. Open a Pull Request
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License.
-
----
-
-Built with ❤️ using Next.js, Convex, and Clerk.
