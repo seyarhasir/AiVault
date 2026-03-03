@@ -9,8 +9,8 @@ import { motion } from "motion/react";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import ToolCard from "@/components/ToolCard";
-import ToolCardSkeleton from "@/components/ToolCardSkeleton";
+import ToolCard from "@/components/tools/ToolCard";
+import ToolCardSkeleton from "@/components/tools/ToolCardSkeleton";
 
 export default function ToolsDirectory() {
   return (
@@ -79,11 +79,10 @@ function ToolsDirectoryContent() {
                   <button
                     key={cat}
                     onClick={() => setCategory(cat)}
-                    className={`text-left px-3 py-2 rounded-lg text-sm transition-colors ${
-                      category === cat
+                    className={`text-left px-3 py-2 rounded-lg text-sm transition-colors ${category === cat
                         ? "bg-primary/20 text-primary font-medium"
                         : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-                    }`}
+                      }`}
                   >
                     {cat}
                   </button>
@@ -98,11 +97,10 @@ function ToolsDirectoryContent() {
                   <button
                     key={price}
                     onClick={() => setPricing(price)}
-                    className={`text-left px-3 py-2 rounded-lg text-sm transition-colors ${
-                      pricing === price
+                    className={`text-left px-3 py-2 rounded-lg text-sm transition-colors ${pricing === price
                         ? "bg-primary/20 text-primary font-medium"
                         : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-                    }`}
+                      }`}
                   >
                     {price}
                   </button>

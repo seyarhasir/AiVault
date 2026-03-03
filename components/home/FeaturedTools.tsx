@@ -5,8 +5,8 @@ import { ArrowRight } from "lucide-react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { motion } from "motion/react";
-import ToolCard from "@/components/ToolCard";
-import ToolCardSkeleton from "@/components/ToolCardSkeleton";
+import ToolCard from "@/components/tools/ToolCard";
+import ToolCardSkeleton from "@/components/tools/ToolCardSkeleton";
 
 export default function FeaturedTools() {
   const featuredTools = useQuery(api.tools.getFeaturedTools);

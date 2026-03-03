@@ -3,8 +3,9 @@
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useAuth } from "@clerk/nextjs";
+import Link from "next/link";
 import Image from "next/image";
-import { Check, X, ShieldAlert, ShieldCheck, Layers, Clock, CheckCircle, TrendingUp, Star, Tag } from "lucide-react";
+import { Check, X, ShieldAlert, ShieldCheck, Layers, Clock, CheckCircle, TrendingUp, Star, Tag, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -20,15 +21,54 @@ export default function AdminDashboard() {
   const approveTool = useMutation(api.tools.approveTool);
   const rejectTool = useMutation(api.tools.rejectTool);
 
-  const handleApprove = async (toolId: any) => {
+  const handleApprove = async (toolId: any, toolName: string, toolSlug: string, submittedBy: string) => {
     if (confirm("Are you sure you want to approve this tool?")) {
-      await approveTool({ toolId });
+      await approveTool({ toolId, sendEmail: true });
+      
+      // Send approval email
+      try {
+        await fetch('/api/send-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'approval',
+            recipientUserId: submittedBy,
+            preferenceKey: 'reviewStatusUpdates',
+            data: { 
+              toolName: toolName,
+              toolUrl: `${window.location.origin}/tools/${toolSlug}`
+            }
+          }),
+        });
+      } catch (emailError) {
+        console.error('Failed to send approval email:', emailError);
+      }
     }
   };
 
-  const handleReject = async (toolId: any) => {
-    if (confirm("Are you sure you want to reject and delete this tool?")) {
-      await rejectTool({ toolId });
+  const handleReject = async (toolId: any, toolName: string, submittedBy: string) => {
+    const reason = prompt("Enter rejection reason (optional):", "Your submission did not meet our requirements.");
+    if (reason !== null) {
+      await rejectTool({ toolId, reason, sendEmail: true });
+      
+      // Send rejection email
+      try {
+        await fetch('/api/send-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'rejection',
+            recipientUserId: submittedBy,
+            preferenceKey: 'reviewStatusUpdates',
+            data: { 
+              toolName: toolName,
+              reason: reason || "Your submission did not meet our requirements."
+            }
+          }),
+        });
+      } catch (emailError) {
+        console.error('Failed to send rejection email:', emailError);
+      }
     }
   };
 
@@ -197,8 +237,18 @@ export default function AdminDashboard() {
 
                     {/* Actions */}
                     <div className="flex md:flex-col gap-0 border-t md:border-t-0 md:border-l border-border shrink-0">
+                      <Link href={`/admin/tools/${tool._id}`} className="contents">
+                        <Button
+                          variant="ghost"
+                          className="flex-1 md:flex-none rounded-none h-full px-6 text-primary hover:text-primary hover:bg-primary/10 gap-2"
+                        >
+                          <Eye className="w-4 h-4" /> View Details
+                        </Button>
+                      </Link>
+                      <Separator orientation="vertical" className="md:hidden" />
+                      <Separator className="hidden md:block" />
                       <Button
-                        onClick={() => handleApprove(tool._id)}
+                        onClick={() => handleApprove(tool._id, tool.name, tool.slug, tool.submittedBy)}
                         variant="ghost"
                         className="flex-1 md:flex-none rounded-none h-full px-6 text-green-600 hover:text-green-700 hover:bg-green-500/10 gap-2"
                       >
@@ -207,7 +257,7 @@ export default function AdminDashboard() {
                       <Separator orientation="vertical" className="md:hidden" />
                       <Separator className="hidden md:block" />
                       <Button
-                        onClick={() => handleReject(tool._id)}
+                        onClick={() => handleReject(tool._id, tool.name, tool.submittedBy)}
                         variant="ghost"
                         className="flex-1 md:flex-none rounded-none h-full px-6 text-destructive hover:text-destructive hover:bg-destructive/10 gap-2"
                       >

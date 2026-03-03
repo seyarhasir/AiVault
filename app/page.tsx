@@ -1,6 +1,6 @@
 "use client";
 
-import { HeroSection } from "@/components/ui/hero-1";
+import { HeroSection } from "@/components/home/Hero";
 import FeaturedTools from "@/components/home/FeaturedTools";
 import StatsSection from "@/components/home/StatsSection";
 import CategoryShowcase from "@/components/home/CategoryShowcase";

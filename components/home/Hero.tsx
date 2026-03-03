@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SparklesIcon, ArrowRightIcon, Search } from "lucide-react";
-import { LogoCloud } from "@/components/ui/logo-cloud-3";
+import { LogoCloud } from "@/components/home/LogoCloud";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
