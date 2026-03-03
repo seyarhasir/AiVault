@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery } from "convex/react";
+import { useQuery, useConvexAuth } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useAuth } from "@clerk/nextjs";
 import Link from "next/link";
@@ -12,11 +12,32 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Dashboard() {
   const { userId, isLoaded } = useAuth();
+  const { isAuthenticated, isLoading: isConvexLoading } = useConvexAuth();
 
-  const bookmarks = useQuery(api.bookmarks.getBookmarks, userId ? { userId } : "skip");
-  const submittedTools = useQuery(api.tools.getSubmittedTools, userId ? { userId } : "skip");
+  const bookmarks = useQuery(api.bookmarks.getBookmarks, isAuthenticated ? {} : "skip");
+  const submittedTools = useQuery(api.tools.getSubmittedTools, isAuthenticated ? {} : "skip");
 
-  if (!isLoaded) return <div className="p-20 text-center text-muted-foreground">Loading...</div>;
+  if (!isLoaded || isConvexLoading) {
+    return (
+      <div className="container mx-auto px-4 py-10 max-w-6xl">
+        <div className="flex items-center justify-between mb-10">
+          <Skeleton className="h-10 w-48" />
+          <Skeleton className="h-10 w-32" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[...Array(6)].map((_, i) => (
+            <Card key={i} className="border-none bg-secondary/10">
+              <CardContent className="p-6">
+                <Skeleton className="h-32 w-full rounded-xl mb-4" />
+                <Skeleton className="h-6 w-3/4 mb-2" />
+                <Skeleton className="h-4 w-1/2" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   if (!userId) {
     return (

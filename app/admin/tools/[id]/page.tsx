@@ -1,7 +1,8 @@
 "use client";
 
-import { useQuery, useMutation } from "convex/react";
+import { useQuery, useMutation, useConvexAuth } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import { useAuth } from "@clerk/nextjs";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Loader2 } from "lucide-react";
@@ -12,11 +13,13 @@ import { AdminToolDetailView } from "@/components/tools/AdminToolDetailView";
 import { AdminReviewActions } from "@/components/tools/AdminReviewActions";
 
 export default function AdminToolReview() {
+  const { userId } = useAuth();
+  const { isAuthenticated } = useConvexAuth();
   const params = useParams();
   const router = useRouter();
   const toolId = params.id as Id<"tools">;
 
-  const tool = useQuery(api.tools.getToolById, { toolId });
+  const tool = useQuery(api.tools.getToolById, isAuthenticated && toolId ? { toolId } : "skip");
   const approveTool = useMutation(api.tools.approveTool);
   const rejectTool = useMutation(api.tools.rejectTool);
 
@@ -37,14 +40,12 @@ export default function AdminToolReview() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            type: 'status-update',
-            to: tool.submittedBy, // This should be the submitter's email, but we use ID for example
+            type: 'approval',
             recipientUserId: tool.submittedBy,
-            preferenceKey: 'submissionUpdates',
+            preferenceKey: 'reviewStatusUpdates',
             data: {
               toolName: tool.name,
-              status: 'approved',
-              message: 'Your tool is now live in our directory.'
+              toolUrl: `${window.location.origin}/tools/${tool.slug}`
             }
           }),
         });
@@ -75,13 +76,12 @@ export default function AdminToolReview() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            type: 'status-update',
+            type: 'rejection',
             recipientUserId: tool.submittedBy,
-            preferenceKey: 'submissionUpdates',
+            preferenceKey: 'reviewStatusUpdates',
             data: {
               toolName: tool.name,
-              status: 'rejected',
-              message: rejectReason.trim()
+              reason: rejectReason.trim()
             }
           }),
         });

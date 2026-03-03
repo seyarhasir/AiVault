@@ -22,7 +22,7 @@ export default function ToolDetail() {
 
   const tool = useQuery(api.tools.getToolBySlug, { slug });
   const isBookmarked = useQuery(api.bookmarks.isBookmarked,
-    tool && userId ? { toolId: tool._id, userId } : "skip"
+    tool ? { toolId: tool._id } : "skip"
   );
   const reviews = useQuery(api.reviews.getReviews,
     tool ? { toolId: tool._id } : "skip"
@@ -55,7 +55,7 @@ export default function ToolDetail() {
 
   const handleBookmark = async () => {
     if (!tool || !userId) return;
-    await toggleBookmark({ toolId: tool._id, userId });
+    await toggleBookmark({ toolId: tool._id });
   };
 
   const handleSubmitReview = async () => {
@@ -64,7 +64,6 @@ export default function ToolDetail() {
     try {
       await addReview({
         toolId: tool._id,
-        userId,
         rating: reviewRating,
         comment: reviewText.trim(),
       });

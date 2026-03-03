@@ -16,12 +16,19 @@ export async function sendEmail(data: EmailData) {
 
   try {
     const result = await resend.emails.send({
-      from: process.env.FROM_EMAIL || 'AiVault <noreply@aivault.com>',
+      from: process.env.FROM_EMAIL || 'AiVault <onboarding@resend.dev>',
       to: data.to,
       subject: data.subject,
       html: data.html,
     });
-    return { success: true, data: result };
+
+    if (result.error) {
+      console.error('Resend API Error:', result.error);
+      return { success: false, error: result.error };
+    }
+
+    console.log('Email sent successfully:', result.data?.id);
+    return { success: true, data: result.data };
   } catch (error) {
     console.error('Failed to send email:', error);
     return { success: false, error };

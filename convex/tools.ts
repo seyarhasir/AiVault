@@ -3,6 +3,28 @@ import { v } from "convex/values";
 import { Doc, Id } from "./_generated/dataModel";
 import { QueryCtx, MutationCtx } from "./_generated/server";
 
+const getAdminIds = () => (process.env.NEXT_PUBLIC_ADMIN_USER_IDS || "")
+  .split(",")
+  .map((id) => id.trim())
+  .filter(Boolean);
+
+async function checkAdmin(ctx: QueryCtx | MutationCtx) {
+  const identity = await ctx.auth.getUserIdentity();
+  if (!identity) throw new Error("Unauthenticated");
+
+  if (!getAdminIds().includes(identity.subject)) {
+    throw new Error("Unauthorized: Admin access required");
+  }
+  return identity;
+}
+
+async function getIdentity(ctx: QueryCtx | MutationCtx) {
+  const identity = await ctx.auth.getUserIdentity();
+  if (!identity) throw new Error("Unauthenticated");
+  return identity;
+}
+
+
 export const getTools = query({
   args: {
     category: v.optional(v.string()),
@@ -10,14 +32,14 @@ export const getTools = query({
     search: v.optional(v.string()),
     sort: v.optional(v.string()), // "newest", "upvotes"
   },
-  handler: async (ctx: QueryCtx, args: { 
-    category?: string; 
-    pricing?: string; 
-    search?: string; 
-    sort?: string; 
+  handler: async (ctx: QueryCtx, args: {
+    category?: string;
+    pricing?: string;
+    search?: string;
+    sort?: string;
   }) => {
     let toolsQuery;
-    
+
     if (args.category && args.category !== "All") {
       toolsQuery = ctx.db
         .query("tools")
@@ -32,8 +54,8 @@ export const getTools = query({
 
     // Secondary filters that don't have composite indices or are complex
     if (args.category && args.category !== "All") {
-        // If we filtered by category first, we still need to filter by approved
-        tools = tools.filter((t) => t.approved);
+      // If we filtered by category first, we still need to filter by approved
+      tools = tools.filter((t) => t.approved);
     }
 
     if (args.pricing && args.pricing !== "All") {
@@ -85,7 +107,7 @@ export const getRelatedTools = query({
       .query("tools")
       .withIndex("by_category", (q) => q.eq("category", args.category))
       .collect();
-      
+
     return tools
       .filter((t) => t.approved && t.slug !== args.excludeSlug)
       .sort((a, b) => b.upvotes - a.upvotes)
@@ -104,17 +126,19 @@ export const getFeaturedTools = query({
 });
 
 export const getSubmittedTools = query({
-  args: { userId: v.string() },
-  handler: async (ctx: QueryCtx, args: { userId: string }) => {
+  args: {},
+  handler: async (ctx: QueryCtx) => {
+    const identity = await getIdentity(ctx);
     return await ctx.db
       .query("tools")
-      .withIndex("by_submittedBy", (q) => q.eq("submittedBy", args.userId))
+      .withIndex("by_submittedBy", (q) => q.eq("submittedBy", identity.subject))
       .collect();
   },
 });
 
 export const getPendingTools = query({
   handler: async (ctx: QueryCtx) => {
+    await checkAdmin(ctx);
     return await ctx.db
       .query("tools")
       .withIndex("by_approved", (q) => q.eq("approved", false))
@@ -141,9 +165,9 @@ export const submitTool = mutation({
     twitterUrl: v.optional(v.string()),
     githubUrl: v.optional(v.string()),
     discordUrl: v.optional(v.string()),
-    userId: v.string(),
   },
   handler: async (ctx: MutationCtx, args: any) => {
+    const identity = await getIdentity(ctx);
     const slug = args.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, "");
 
     // Check if slug exists
@@ -170,58 +194,58 @@ export const submitTool = mutation({
       githubUrl: args.githubUrl,
       discordUrl: args.discordUrl,
       upvotes: 0,
-      submittedBy: args.userId,
+      submittedBy: identity.subject,
       approved: false, // Requires admin approval
       createdAt: Date.now(),
       isNew: true,
     });
-    
+
     return { toolId, slug: finalSlug };
   },
 });
 
 export const approveTool = mutation({
-  args: { 
+  args: {
     toolId: v.id("tools"),
     sendEmail: v.optional(v.boolean()),
   },
   handler: async (ctx: MutationCtx, args: { toolId: Id<"tools">; sendEmail?: boolean }) => {
+    await checkAdmin(ctx);
     await ctx.db.patch(args.toolId, { approved: true });
-    // Email sending will be handled via API route
     return { success: true };
   },
 });
 
 export const rejectTool = mutation({
-  args: { 
+  args: {
     toolId: v.id("tools"),
     reason: v.optional(v.string()),
     sendEmail: v.optional(v.boolean()),
   },
   handler: async (ctx: MutationCtx, args: { toolId: Id<"tools">; reason?: string; sendEmail?: boolean }) => {
+    await checkAdmin(ctx);
     // Get tool data before deletion for email
     const tool = await ctx.db.get(args.toolId);
     await ctx.db.delete(args.toolId);
-    // Email sending will be handled via API route
     return { success: true, tool, reason: args.reason };
   },
 });
 
 export const getStats = query({
   handler: async (ctx: QueryCtx) => {
-    const tools = await ctx.db
+    const approvedTools = await ctx.db
       .query("tools")
       .withIndex("by_approved", (q) => q.eq("approved", true))
       .collect();
 
-    const categories = new Set(tools.map((t) => t.category));
-    const totalUpvotes = tools.reduce((sum, t) => sum + t.upvotes, 0);
-    const featured = tools.filter((t) => t.featured);
+    const categories = new Set(approvedTools.map((t) => t.category));
+    const totalUpvotes = approvedTools.reduce((sum, t) => sum + t.upvotes, 0);
+    const featuredCount = approvedTools.filter((t) => t.featured).length;
 
     return {
-      totalTools: tools.length,
+      totalTools: approvedTools.length,
       totalCategories: categories.size,
-      totalFeatured: featured.length,
+      totalFeatured: featuredCount,
       totalUpvotes,
     };
   },
@@ -229,19 +253,29 @@ export const getStats = query({
 
 export const getAdminStats = query({
   handler: async (ctx: QueryCtx) => {
-    const allTools = await ctx.db.query("tools").collect();
-    const approved = allTools.filter((t) => t.approved);
-    const pending = allTools.filter((t) => !t.approved);
-    const categories = new Set(approved.map((t) => t.category));
-    const totalUpvotes = approved.reduce((sum, t) => sum + t.upvotes, 0);
-    const featured = approved.filter((t) => t.featured);
+    await checkAdmin(ctx);
+
+    // Get counts using indices where possible
+    const approvedTools = await ctx.db
+      .query("tools")
+      .withIndex("by_approved", (q) => q.eq("approved", true))
+      .collect();
+
+    const pendingTools = await ctx.db
+      .query("tools")
+      .withIndex("by_approved", (q) => q.eq("approved", false))
+      .collect();
+
+    const categories = new Set(approvedTools.map((t) => t.category));
+    const totalUpvotes = approvedTools.reduce((sum, t) => sum + t.upvotes, 0);
+    const featuredCount = approvedTools.filter((t) => t.featured).length;
 
     return {
-      totalTools: allTools.length,
-      approvedCount: approved.length,
-      pendingCount: pending.length,
+      totalTools: approvedTools.length + pendingTools.length,
+      approvedCount: approvedTools.length,
+      pendingCount: pendingTools.length,
       totalCategories: categories.size,
-      totalFeatured: featured.length,
+      totalFeatured: featuredCount,
       totalUpvotes,
     };
   },

@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery, useMutation } from "convex/react";
+import { useQuery, useMutation, useConvexAuth } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useAuth } from "@clerk/nextjs";
 import Link from "next/link";
@@ -12,75 +12,68 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 import { isAdmin } from "@/lib/admin";
+import { AdminReviewActions } from "@/components/tools/AdminReviewActions";
+import { useState } from "react";
 
 export default function AdminDashboard() {
   const { userId, isLoaded } = useAuth();
+  const { isAuthenticated, isLoading: isConvexLoading } = useConvexAuth();
 
-  const pendingTools = useQuery(api.tools.getPendingTools);
-  const adminStats = useQuery(api.tools.getAdminStats);
+  const pendingTools = useQuery(api.tools.getPendingTools, isAuthenticated ? {} : "skip");
+  const adminStats = useQuery(api.tools.getAdminStats, isAuthenticated ? {} : "skip");
   const approveTool = useMutation(api.tools.approveTool);
   const rejectTool = useMutation(api.tools.rejectTool);
 
-  const handleApprove = async (toolId: any, toolName: string, toolSlug: string, submittedBy: string) => {
-    if (confirm("Are you sure you want to approve this tool?")) {
+  const [activeToolId, setActiveToolId] = useState<string | null>(null);
+  const [isApproving, setIsApproving] = useState(false);
+  const [isRejecting, setIsRejecting] = useState(false);
+  const [rejectReason, setRejectReason] = useState("");
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  const handleApprove = async (toolId: any) => {
+    setIsApproving(true);
+    try {
       await approveTool({ toolId, sendEmail: true });
-      
-      // Send approval email
-      try {
-        await fetch('/api/send-email', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            type: 'approval',
-            recipientUserId: submittedBy,
-            preferenceKey: 'reviewStatusUpdates',
-            data: { 
-              toolName: toolName,
-              toolUrl: `${window.location.origin}/tools/${toolSlug}`
-            }
-          }),
-        });
-      } catch (emailError) {
-        console.error('Failed to send approval email:', emailError);
-      }
+    } finally {
+      setIsApproving(false);
     }
   };
 
-  const handleReject = async (toolId: any, toolName: string, submittedBy: string) => {
-    const reason = prompt("Enter rejection reason (optional):", "Your submission did not meet our requirements.");
-    if (reason !== null) {
-      await rejectTool({ toolId, reason, sendEmail: true });
-      
-      // Send rejection email
-      try {
-        await fetch('/api/send-email', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            type: 'rejection',
-            recipientUserId: submittedBy,
-            preferenceKey: 'reviewStatusUpdates',
-            data: { 
-              toolName: toolName,
-              reason: reason || "Your submission did not meet our requirements."
-            }
-          }),
-        });
-      } catch (emailError) {
-        console.error('Failed to send rejection email:', emailError);
-      }
+  const handleReject = async (e: React.FormEvent, toolId: any) => {
+    e.preventDefault();
+    setIsRejecting(true);
+    try {
+      await rejectTool({ toolId, reason: rejectReason, sendEmail: true });
+      setIsDialogOpen(false);
+      setRejectReason("");
+    } finally {
+      setIsRejecting(false);
     }
   };
 
-  if (!isLoaded) {
+  if (!isLoaded || isConvexLoading) {
     return (
       <div className="container mx-auto px-4 py-10 max-w-6xl">
-        <Skeleton className="h-10 w-64 mb-10" />
+        <div className="flex items-center justify-between mb-10">
+          <div>
+            <Skeleton className="h-10 w-64 mb-2" />
+            <Skeleton className="h-4 w-96" />
+          </div>
+          <Skeleton className="h-10 w-24 rounded-full" />
+        </div>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-10">
           {[...Array(6)].map((_, i) => (
-            <Card key={i}><CardContent className="p-4"><Skeleton className="h-16 w-full" /></CardContent></Card>
+            <Card key={i} className="border-none bg-secondary/20">
+              <CardContent className="p-4 text-center space-y-2">
+                <Skeleton className="h-5 w-5 mx-auto rounded-full" />
+                <Skeleton className="h-8 w-12 mx-auto" />
+                <Skeleton className="h-3 w-16 mx-auto" />
+              </CardContent>
+            </Card>
           ))}
         </div>
+        <Separator className="mb-10" />
+
       </div>
     );
   }
@@ -236,33 +229,39 @@ export default function AdminDashboard() {
                     </div>
 
                     {/* Actions */}
-                    <div className="flex md:flex-col gap-0 border-t md:border-t-0 md:border-l border-border shrink-0">
-                      <Link href={`/admin/tools/${tool._id}`} className="contents">
+                    <div className="flex md:flex-col gap-0 border-t md:border-t-0 md:border-l border-border shrink-0 p-2 justify-center">
+                      <Link href={`/admin/tools/${tool._id}`} className="mb-2">
                         <Button
                           variant="ghost"
-                          className="flex-1 md:flex-none rounded-none h-full px-6 text-primary hover:text-primary hover:bg-primary/10 gap-2"
+                          className="w-full text-primary hover:text-primary hover:bg-primary/10 gap-2"
                         >
-                          <Eye className="w-4 h-4" /> View Details
+                          <Eye className="w-4 h-4" /> Details
                         </Button>
                       </Link>
-                      <Separator orientation="vertical" className="md:hidden" />
-                      <Separator className="hidden md:block" />
-                      <Button
-                        onClick={() => handleApprove(tool._id, tool.name, tool.slug, tool.submittedBy)}
-                        variant="ghost"
-                        className="flex-1 md:flex-none rounded-none h-full px-6 text-green-600 hover:text-green-700 hover:bg-green-500/10 gap-2"
-                      >
-                        <Check className="w-4 h-4" /> Approve
-                      </Button>
-                      <Separator orientation="vertical" className="md:hidden" />
-                      <Separator className="hidden md:block" />
-                      <Button
-                        onClick={() => handleReject(tool._id, tool.name, tool.submittedBy)}
-                        variant="ghost"
-                        className="flex-1 md:flex-none rounded-none h-full px-6 text-destructive hover:text-destructive hover:bg-destructive/10 gap-2"
-                      >
-                        <X className="w-4 h-4" /> Reject
-                      </Button>
+
+                      <AdminReviewActions
+                        toolId={tool._id}
+                        isApproving={activeToolId === tool._id && isApproving}
+                        isRejecting={activeToolId === tool._id && isRejecting}
+                        rejectReason={activeToolId === tool._id ? rejectReason : ""}
+                        setRejectReason={(r) => {
+                          setActiveToolId(tool._id);
+                          setRejectReason(r);
+                        }}
+                        handleApprove={() => {
+                          setActiveToolId(tool._id);
+                          return handleApprove(tool._id);
+                        }}
+                        handleReject={(e) => {
+                          setActiveToolId(tool._id);
+                          return handleReject(e, tool._id);
+                        }}
+                        isDialogOpen={activeToolId === tool._id && isDialogOpen}
+                        setIsDialogOpen={(open) => {
+                          if (open) setActiveToolId(tool._id);
+                          setIsDialogOpen(open);
+                        }}
+                      />
                     </div>
                   </div>
                 </CardContent>
@@ -271,6 +270,7 @@ export default function AdminDashboard() {
           </div>
         )}
       </section>
+
     </div>
   );
 }

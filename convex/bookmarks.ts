@@ -3,12 +3,19 @@ import { v } from "convex/values";
 import { Id } from "./_generated/dataModel";
 import { QueryCtx, MutationCtx } from "./_generated/server";
 
+async function getIdentity(ctx: QueryCtx | MutationCtx) {
+  const identity = await ctx.auth.getUserIdentity();
+  if (!identity) throw new Error("Unauthenticated");
+  return identity;
+}
+
 export const getBookmarks = query({
-  args: { userId: v.string() },
-  handler: async (ctx: QueryCtx, args: { userId: string }) => {
+  args: {},
+  handler: async (ctx: QueryCtx) => {
+    const identity = await getIdentity(ctx);
     const bookmarks = await ctx.db
       .query("bookmarks")
-      .withIndex("by_userId", (q) => q.eq("userId", args.userId))
+      .withIndex("by_userId", (q) => q.eq("userId", identity.subject))
       .collect();
 
     const tools = await Promise.all(
@@ -23,12 +30,13 @@ export const getBookmarks = query({
 });
 
 export const toggleBookmark = mutation({
-  args: { userId: v.string(), toolId: v.id("tools") },
-  handler: async (ctx: MutationCtx, args: { userId: string; toolId: Id<"tools"> }) => {
+  args: { toolId: v.id("tools") },
+  handler: async (ctx: MutationCtx, args: { toolId: Id<"tools"> }) => {
+    const identity = await getIdentity(ctx);
     const existing = await ctx.db
       .query("bookmarks")
       .withIndex("by_userId_and_toolId", (q) =>
-        q.eq("userId", args.userId).eq("toolId", args.toolId)
+        q.eq("userId", identity.subject).eq("toolId", args.toolId)
       )
       .first();
 
@@ -37,7 +45,7 @@ export const toggleBookmark = mutation({
       return false; // unbookmarked
     } else {
       await ctx.db.insert("bookmarks", {
-        userId: args.userId,
+        userId: identity.subject,
         toolId: args.toolId,
       });
       return true; // bookmarked
@@ -46,13 +54,15 @@ export const toggleBookmark = mutation({
 });
 
 export const isBookmarked = query({
-  args: { userId: v.string(), toolId: v.id("tools") },
-  handler: async (ctx: QueryCtx, args: { userId: string; toolId: Id<"tools"> }) => {
-    if (!args.userId) return false;
+  args: { toolId: v.id("tools") },
+  handler: async (ctx: QueryCtx, args: { toolId: Id<"tools"> }) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return false;
+
     const existing = await ctx.db
       .query("bookmarks")
       .withIndex("by_userId_and_toolId", (q) =>
-        q.eq("userId", args.userId).eq("toolId", args.toolId)
+        q.eq("userId", identity.subject).eq("toolId", args.toolId)
       )
       .first();
     return !!existing;

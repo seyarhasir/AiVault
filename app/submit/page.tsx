@@ -126,7 +126,6 @@ export default function SubmitTool() {
         twitterUrl: formData.twitterUrl || undefined,
         githubUrl: formData.githubUrl || undefined,
         discordUrl: formData.discordUrl || undefined,
-        userId,
       });
 
       // Email notifications...
@@ -198,8 +197,8 @@ export default function SubmitTool() {
               type="button"
               onClick={() => { if (s < step) setStep(s); }}
               className={`w-8 h-8 rounded-full text-sm font-medium flex items-center justify-center shrink-0 transition-colors ${s === step ? "bg-primary text-primary-foreground" :
-                  s < step ? "bg-primary/20 text-primary cursor-pointer" :
-                    "bg-secondary text-muted-foreground"
+                s < step ? "bg-primary/20 text-primary cursor-pointer" :
+                  "bg-secondary text-muted-foreground"
                 }`}
             >
               {s}

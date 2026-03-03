@@ -5,7 +5,7 @@ import { ConvexProviderWithClerk } from "convex/react-clerk";
 import { ConvexReactClient } from "convex/react";
 import { ThemeProvider } from "next-themes";
 
-const convexUrl = (process.env.NEXT_PUBLIC_CONVEX_URL || "").replace(".convex.site", ".convex.cloud");
+const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL || "";
 const convex = convexUrl ? new ConvexReactClient(convexUrl) : null;
 
 function ConvexClientProvider({ children }: { children: React.ReactNode }) {

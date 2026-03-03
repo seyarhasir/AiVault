@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { clerkClient } from '@clerk/nextjs/server';
+import { auth, clerkClient } from '@clerk/nextjs/server';
 import { sendEmail, submissionConfirmationEmail, approvalEmail, rejectionEmail, adminNotificationEmail } from '@/lib/email';
+import { isAdmin } from '@/lib/admin';
 
 type PreferenceKey = 'submissionUpdates' | 'reviewStatusUpdates' | 'marketingUpdates';
 
@@ -11,6 +12,11 @@ type EmailPreferences = {
 };
 
 export async function POST(request: NextRequest) {
+  const { userId } = await auth();
+  if (!userId) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   try {
     const body = await request.json();
     const { type, to, data, recipientUserId, preferenceKey } = body as {
@@ -20,6 +26,11 @@ export async function POST(request: NextRequest) {
       recipientUserId?: string;
       preferenceKey?: PreferenceKey;
     };
+
+    // Admin-only email types
+    if (['approval', 'rejection'].includes(type) && !isAdmin(userId)) {
+      return NextResponse.json({ error: 'Unauthorized: Admin only' }, { status: 403 });
+    }
 
     let emailContent;
 
