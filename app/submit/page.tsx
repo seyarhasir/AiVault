@@ -310,7 +310,7 @@ export default function SubmitTool() {
                       </div>
                     )}
 
-                    {(formData.logoUrl || logoPreview) && (
+                    {(logoPreview || (formData.logoUrl && (formData.logoUrl.startsWith('http') || formData.logoUrl.startsWith('data:')))) && (
                       <div className="mt-3 flex items-center gap-3">
                         <div className="w-12 h-12 rounded-xl overflow-hidden bg-secondary border border-border relative">
                           <Image 
@@ -319,6 +319,7 @@ export default function SubmitTool() {
                             fill 
                             className="object-cover" 
                             referrerPolicy="no-referrer" 
+                            unoptimized={!!logoPreview}
                           />
                         </div>
                         <span className="text-xs text-muted-foreground">Logo preview</span>
