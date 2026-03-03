@@ -187,7 +187,7 @@ export default function AdminDashboard() {
                 <CardContent className="p-0">
                   <div className="flex flex-col md:flex-row">
                     {/* Tool Info */}
-                    <div className="flex-1 p-6 flex gap-5">
+                    <div className="flex-1 p-6 flex flex-col sm:flex-row gap-5">
                       <div className="w-16 h-16 rounded-xl overflow-hidden bg-secondary relative shrink-0">
                         {tool.logoUrl ? (
                           <Image src={tool.logoUrl} alt={tool.name} fill className="object-cover" referrerPolicy="no-referrer" />

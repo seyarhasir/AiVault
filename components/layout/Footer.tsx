@@ -117,7 +117,7 @@ export default function Footer() {
         {/* Bottom */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-xs text-muted-foreground tracking-wider">
-            &copy; {new Date().getFullYear()} AiVault. All rights reserved.
+            &copy; {new Date().getFullYear()} Ai Vault. All rights reserved.
           </p>
           <div className="flex items-center gap-6">
             <Link href="/tools" className="text-xs text-muted-foreground hover:text-primary transition-colors tracking-wider">

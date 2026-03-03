@@ -30,7 +30,7 @@ export default function HowItWorks() {
             How It <span className="text-primary">Works</span>
           </h2>
           <p className="text-muted-foreground max-w-lg mx-auto mt-3 text-base tracking-wider md:text-lg">
-            AiVault makes it simple to find, compare, and organize the AI tools that matter to you.
+            Ai Vault makes it simple to find, compare, and organize the AI tools that matter to you.
           </p>
         </div>
 

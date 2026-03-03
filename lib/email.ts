@@ -16,7 +16,7 @@ export async function sendEmail(data: EmailData) {
 
   try {
     const result = await resend.emails.send({
-      from: process.env.FROM_EMAIL || 'AiVault <onboarding@resend.dev>',
+      from: process.env.FROM_EMAIL || 'Ai Vault <onboarding@resend.dev>',
       to: data.to,
       subject: data.subject,
       html: data.html,
@@ -42,7 +42,7 @@ export function submissionConfirmationEmail(toolName: string) {
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
         <h2 style="color: #333; border-bottom: 2px solid #6366f1; padding-bottom: 10px;">
-          Thank you for submitting to AiVault!
+          Thank you for submitting to Ai Vault!
         </h2>
         <p style="color: #666; line-height: 1.6;">
           We've received your submission for <strong>${toolName}</strong>. Our team will review it and get back to you soon.
@@ -59,7 +59,7 @@ export function submissionConfirmationEmail(toolName: string) {
           </p>
         </div>
         <p style="color: #999; font-size: 12px; margin-top: 30px;">
-          This is an automated message from AiVault. Please do not reply to this email.
+          This is an automated message from Ai Vault. Please do not reply to this email.
         </p>
       </div>
     `,
@@ -75,7 +75,7 @@ export function approvalEmail(toolName: string, toolUrl: string) {
           Congratulations! Your tool has been approved!
         </h2>
         <p style="color: #666; line-height: 1.6;">
-          Great news! <strong>${toolName}</strong> has been approved and is now live on AiVault.
+          Great news! <strong>${toolName}</strong> has been approved and is now live on Ai Vault.
         </p>
         <div style="text-align: center; margin: 30px 0;">
           <a href="${toolUrl}" 
@@ -92,7 +92,7 @@ export function approvalEmail(toolName: string, toolUrl: string) {
           </p>
         </div>
         <p style="color: #999; font-size: 12px; margin-top: 30px;">
-          This is an automated message from AiVault. Please do not reply to this email.
+          This is an automated message from Ai Vault. Please do not reply to this email.
         </p>
       </div>
     `,
@@ -108,7 +108,7 @@ export function rejectionEmail(toolName: string, reason: string) {
           Tool Submission Update
         </h2>
         <p style="color: #666; line-height: 1.6;">
-          Thank you for submitting <strong>${toolName}</strong> to AiVault. After review, we were unable to approve your submission at this time.
+          Thank you for submitting <strong>${toolName}</strong> to Ai Vault. After review, we were unable to approve your submission at this time.
         </p>
         <div style="margin: 20px 0; padding: 15px; background: #fef2f2; border-radius: 8px; border-left: 4px solid #ef4444;">
           <p style="color: #991b1b; margin: 0; font-size: 14px;">
@@ -120,7 +120,7 @@ export function rejectionEmail(toolName: string, reason: string) {
           You're welcome to resubmit after addressing the feedback above. If you have any questions, feel free to reach out to our support team.
         </p>
         <p style="color: #999; font-size: 12px; margin-top: 30px;">
-          This is an automated message from AiVault. Please do not reply to this email.
+          This is an automated message from Ai Vault. Please do not reply to this email.
         </p>
       </div>
     `,
@@ -149,7 +149,7 @@ export function adminNotificationEmail(toolName: string, submittedBy: string, ad
           </a>
         </div>
         <p style="color: #999; font-size: 12px; margin-top: 30px;">
-          This is an automated message from AiVault Admin.
+          This is an automated message from Ai Vault Admin.
         </p>
       </div>
     `,
