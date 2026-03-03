@@ -310,7 +310,7 @@ export default function SubmitTool() {
                       </div>
                     )}
 
-                    {(logoPreview || (formData.logoUrl && (formData.logoUrl.startsWith('http') || formData.logoUrl.startsWith('data:')))) && (
+                    {(logoPreview || (formData.logoUrl && (formData.logoUrl.startsWith('http://') || formData.logoUrl.startsWith('https://') || formData.logoUrl.startsWith('data:')))) && (
                       <div className="mt-3 flex items-center gap-3">
                         <div className="w-12 h-12 rounded-xl overflow-hidden bg-secondary border border-border relative">
                           <Image 
