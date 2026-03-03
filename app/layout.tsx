@@ -4,6 +4,7 @@ import './globals.css';
 import Providers from './providers';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import { Analytics } from '@vercel/analytics/next';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
 
@@ -42,6 +43,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <main className="flex-1 flex flex-col">{children}</main>
           <Footer />
         </Providers>
+        <Analytics />
       </body>
     </html>
   );
