@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useAuth } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
-import { Loader2, Plus, X, Twitter, Github, MessageCircle } from "lucide-react";
+import { Loader2, Plus, X, Twitter, Github, MessageCircle, Upload, Link as LinkIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -53,6 +53,10 @@ export default function SubmitTool() {
   const [useCaseInput, setUseCaseInput] = useState("");
   const [proInput, setProInput] = useState("");
   const [conInput, setConInput] = useState("");
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string>("");
+  const [logoInputType, setLogoInputType] = useState<"url" | "upload">("url");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const addToList = (field: "tags" | "features" | "useCases" | "pros" | "cons", value: string, setter: (v: string) => void) => {
     const trimmed = value.trim();
@@ -72,6 +76,37 @@ export default function SubmitTool() {
         ? formData.platforms.filter((p) => p !== platform)
         : [...formData.platforms, platform],
     });
+  };
+
+  const handleLogoFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        alert("File size must be less than 2MB");
+        return;
+      }
+      if (!file.type.startsWith("image/")) {
+        alert("Please upload an image file");
+        return;
+      }
+      setLogoFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const result = reader.result as string;
+        setLogoPreview(result);
+        setFormData({ ...formData, logoUrl: result });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const clearLogoFile = () => {
+    setLogoFile(null);
+    setLogoPreview("");
+    setFormData({ ...formData, logoUrl: "" });
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -208,17 +243,83 @@ export default function SubmitTool() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-1.5">Logo URL</label>
-                    <p className="text-xs text-muted-foreground mb-2">Paste a direct link to the logo image. Use logos.hunter.io/yourdomain.com for auto-detection.</p>
-                    <Input
-                      type="url" value={formData.logoUrl}
-                      onChange={(e) => setFormData({ ...formData, logoUrl: e.target.value })}
-                      placeholder="https://logos.hunter.io/yourdomain.com"
-                    />
-                    {formData.logoUrl && (
+                    <label className="block text-sm font-medium mb-1.5">Logo</label>
+                    <p className="text-xs text-muted-foreground mb-2">Upload a logo image or paste a URL. Max 2MB.</p>
+                    
+                    <div className="flex gap-2 mb-3">
+                      <Button
+                        type="button"
+                        variant={logoInputType === "url" ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setLogoInputType("url")}
+                        className="gap-2"
+                      >
+                        <LinkIcon className="w-4 h-4" />
+                        URL
+                      </Button>
+                      <Button
+                        type="button"
+                        variant={logoInputType === "upload" ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setLogoInputType("upload")}
+                        className="gap-2"
+                      >
+                        <Upload className="w-4 h-4" />
+                        Upload
+                      </Button>
+                    </div>
+
+                    {logoInputType === "url" ? (
+                      <Input
+                        type="url" 
+                        value={formData.logoUrl}
+                        onChange={(e) => {
+                          setFormData({ ...formData, logoUrl: e.target.value });
+                          setLogoPreview("");
+                          setLogoFile(null);
+                        }}
+                        placeholder="https://logos.hunter.io/yourdomain.com"
+                      />
+                    ) : (
+                      <div className="flex gap-2">
+                        <input
+                          type="file"
+                          ref={fileInputRef}
+                          onChange={handleLogoFileChange}
+                          accept="image/*"
+                          className="hidden"
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => fileInputRef.current?.click()}
+                          className="w-full"
+                        >
+                          {logoFile ? logoFile.name : "Choose file..."}
+                        </Button>
+                        {logoFile && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={clearLogoFile}
+                          >
+                            <X className="w-4 h-4" />
+                          </Button>
+                        )}
+                      </div>
+                    )}
+
+                    {(formData.logoUrl || logoPreview) && (
                       <div className="mt-3 flex items-center gap-3">
                         <div className="w-12 h-12 rounded-xl overflow-hidden bg-secondary border border-border relative">
-                          <Image src={formData.logoUrl} alt="Preview" fill className="object-cover" referrerPolicy="no-referrer" />
+                          <Image 
+                            src={logoPreview || formData.logoUrl} 
+                            alt="Preview" 
+                            fill 
+                            className="object-cover" 
+                            referrerPolicy="no-referrer" 
+                          />
                         </div>
                         <span className="text-xs text-muted-foreground">Logo preview</span>
                       </div>
