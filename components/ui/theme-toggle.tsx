@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import { useTheme } from "next-themes"
 import { Moon, Sun } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -9,12 +10,22 @@ interface ThemeToggleProps {
 }
 
 export function ThemeToggle({ className }: ThemeToggleProps) {
-  const [isDark, setIsDark] = useState(true)
+  const { resolvedTheme, setTheme } = useTheme()
+  const [mounted, setMounted] = useState(false)
+  
+  useEffect(() => setMounted(true), [])
+  
+  const isDark = resolvedTheme === "dark"
 
-  // next-themes
-  // const { resolvedTheme, setTheme } = useTheme()
-  // const isDark = resolvedTheme === "dark"
-  // onClick={() => setTheme(isDark ? "light" : "dark")}
+  if (!mounted) {
+    return (
+      <div className={cn("flex w-16 h-8 p-1 rounded-full bg-zinc-950 border border-zinc-800", className)}>
+        <div className="flex justify-center items-center w-6 h-6 rounded-full bg-zinc-800">
+          <Moon className="w-4 h-4 text-white" strokeWidth={1.5} />
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div
@@ -25,7 +36,7 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
           : "bg-white border border-zinc-200",
         className
       )}
-      onClick={() => setIsDark(!isDark)}
+      onClick={() => setTheme(isDark ? "light" : "dark")}
       role="button"
       tabIndex={0}
     >
