@@ -52,7 +52,7 @@ export function HeroSection() {
           <div className="absolute inset-y-0 right-8 w-px bg-linear-to-b from-transparent via-border/50 to-border/50 md:right-12" />
         </div>
 
-        <a
+        <Link
           className={cn(
             "group mx-auto flex w-fit items-center gap-3 rounded-full border bg-card px-3 py-1 shadow",
             "fade-in slide-in-from-bottom-10 animate-in fill-mode-backwards transition-all delay-500 duration-500 ease-out"
@@ -63,7 +63,7 @@ export function HeroSection() {
           <span className="text-xs">40+ curated AI tools</span>
           <span className="block h-5 border-l" />
           <ArrowRightIcon className="size-3 duration-150 ease-out group-hover:translate-x-1" />
-        </a>
+        </Link>
 
         <h1
           className={cn(

@@ -80,56 +80,6 @@ function ToolsDirectoryContent() {
 
   const categoryScrollRef = useRef<HTMLDivElement>(null);
 
-  const FilterContent = () => (
-    <div className="space-y-8">
-      <div>
-        <label className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-4 block">Categories</label>
-        <div className="grid grid-cols-2 gap-2">
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setCategory(cat)}
-              className={`text-left px-3 py-2.5 rounded-xl text-sm transition-all border ${category === cat
-                ? "bg-primary/10 border-primary/30 text-primary font-medium shadow-[0_0_15px_rgba(var(--primary),0.1)]"
-                : "text-muted-foreground border-transparent hover:bg-secondary/50 hover:text-foreground"
-                }`}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div>
-        <label className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-4 block">Pricing</label>
-        <div className="grid grid-cols-2 gap-2">
-          {pricingOptions.map((price) => (
-            <button
-              key={price}
-              onClick={() => setPricing(price)}
-              className={`text-left px-3 py-2.5 rounded-xl text-sm transition-all border ${pricing === price
-                ? "bg-primary/10 border-primary/30 text-primary font-medium shadow-[0_0_15px_rgba(var(--primary),0.1)]"
-                : "text-muted-foreground border-transparent hover:bg-secondary/50 hover:text-foreground"
-                }`}
-            >
-              {price}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="pt-4">
-        <Button
-          variant="outline"
-          className="w-full rounded-xl py-6"
-          onClick={() => { setCategory("All"); setPricing("All"); setSearch(""); }}
-        >
-          Reset All Filters
-        </Button>
-      </div>
-    </div>
-  );
-
   return (
     <div className="container mx-auto px-4 py-6 md:py-10 max-w-7xl">
       {/* Mobile Top Header & Categories */}
@@ -153,7 +103,15 @@ function ToolsDirectoryContent() {
                 <SheetTitle className="text-left font-bold text-xl tracking-tight px-1">Filters</SheetTitle>
               </SheetHeader>
               <ScrollArea className="h-full pb-20 px-1">
-                <FilterContent />
+                <FilterContent
+                  categories={categories}
+                  category={category}
+                  setCategory={setCategory}
+                  pricingOptions={pricingOptions}
+                  pricing={pricing}
+                  setPricing={setPricing}
+                  setSearch={setSearch}
+                />
               </ScrollArea>
             </SheetContent>
           </Sheet>
@@ -186,7 +144,15 @@ function ToolsDirectoryContent() {
         <aside className="hidden md:block w-64 shrink-0">
           <div className="sticky top-24 space-y-8">
             <h1 className="text-3xl font-bold tracking-tight mb-8">Directory</h1>
-            <FilterContent />
+            <FilterContent
+              categories={categories}
+              category={category}
+              setCategory={setCategory}
+              pricingOptions={pricingOptions}
+              pricing={pricing}
+              setPricing={setPricing}
+              setSearch={setSearch}
+            />
           </div>
         </aside>
 
@@ -295,6 +261,76 @@ function ToolsDirectoryContent() {
             </div>
           )}
         </main>
+      </div>
+    </div>
+  );
+}
+
+interface FilterContentProps {
+  categories: string[];
+  category: string;
+  setCategory: (cat: string) => void;
+  pricingOptions: string[];
+  pricing: string;
+  setPricing: (price: string) => void;
+  setSearch: (search: string) => void;
+}
+
+function FilterContent({
+  categories,
+  category,
+  setCategory,
+  pricingOptions,
+  pricing,
+  setPricing,
+  setSearch
+}: FilterContentProps) {
+  return (
+    <div className="space-y-8">
+      <div>
+        <label className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-4 block">Categories</label>
+        <div className="grid grid-cols-2 gap-2">
+          {categories.map((cat) => (
+            <button
+              key={cat}
+              onClick={() => setCategory(cat)}
+              className={`text-left px-3 py-2.5 rounded-xl text-sm transition-all border ${category === cat
+                ? "bg-primary/10 border-primary/30 text-primary font-medium shadow-[0_0_15px_rgba(var(--primary),0.1)]"
+                : "text-muted-foreground border-transparent hover:bg-secondary/50 hover:text-foreground"
+                }`}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <label className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-4 block">Pricing</label>
+        <div className="grid grid-cols-2 gap-2">
+          {pricingOptions.map((price) => (
+            <button
+              key={price}
+              onClick={() => setPricing(price)}
+              className={`text-left px-3 py-2.5 rounded-xl text-sm transition-all border ${pricing === price
+                ? "bg-primary/10 border-primary/30 text-primary font-medium shadow-[0_0_15px_rgba(var(--primary),0.1)]"
+                : "text-muted-foreground border-transparent hover:bg-secondary/50 hover:text-foreground"
+                }`}
+            >
+              {price}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="pt-4">
+        <Button
+          variant="outline"
+          className="w-full rounded-xl py-6"
+          onClick={() => { setCategory("All"); setPricing("All"); setSearch(""); }}
+        >
+          Reset All Filters
+        </Button>
       </div>
     </div>
   );
